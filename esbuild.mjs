@@ -6,7 +6,7 @@ const shared = {
   format: "cjs",
   target: "node20",
   sourcemap: true,
-  external: ["vscode", "mocha"],
+  external: ["vscode"],
   logLevel: "warning",
 };
 
