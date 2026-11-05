@@ -18,6 +18,13 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 File issues only into the user's own repo. Never file into `mattpocock/skills` (the repo these skills come from) unless the user owns it. In a fork, `gh` can default to the upstream parent, so before the first `gh issue create` of a session, check the target with `gh repo view --json nameWithOwner` and confirm it with the user if it is not their repo.
 
+## Landing a ticket
+
+- Build each ticket on its own branch off `main`, named `ticket/<n>-<slug>`.
+- Open one PR per ticket, into `main`, with `Closes #<n>` in the body.
+- The maintainer reviews and merges every PR. Agents never merge ticket work and don't close its ticket by hand.
+- Start a ticket only after the PRs for all its blockers have merged.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
