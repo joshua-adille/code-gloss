@@ -13,6 +13,8 @@ export interface FakeHarnessOptions {
   stepDelayMs?: number;
 }
 
+const MAX_CHUNKS = 40;
+
 export class FakeHarness implements HarnessAdapter {
   /** Every request this harness has been asked to explain, oldest first. */
   readonly requests: HarnessRequest[] = [];
@@ -33,7 +35,7 @@ export class FakeHarness implements HarnessAdapter {
     signal: AbortSignal,
   ): AsyncIterable<string> {
     this.requests.push(request);
-    for (const step of this.options.steps ?? []) {
+    for (const step of this.options.steps ?? describeRequest(request)) {
       await pause(this.stepDelayMs, signal);
       if (signal.aborted) {
         this.cancelledRuns += 1;
@@ -45,6 +47,30 @@ export class FakeHarness implements HarnessAdapter {
       yield step;
     }
   }
+}
+
+/** Stands in for a real explanation, split up so that it visibly streams. */
+function describeRequest({ selection, fileContents }: HarnessRequest): string[] {
+  const text = [
+    "## Fake explanation\n\n",
+    "This text comes from the fake harness, so it says nothing about what ",
+    "the code means. ",
+    `It was given ${lineCount(selection)} of ${lineCount(fileContents)} lines:`,
+    "\n\n```\n",
+    selection,
+    "\n```\n",
+  ].join("");
+
+  const chunkLength = Math.ceil(text.length / MAX_CHUNKS);
+  const chunks: string[] = [];
+  for (let start = 0; start < text.length; start += chunkLength) {
+    chunks.push(text.slice(start, start + chunkLength));
+  }
+  return chunks;
+}
+
+function lineCount(text: string): number {
+  return text.split("\n").length;
 }
 
 function pause(ms: number, signal: AbortSignal): Promise<void> {
